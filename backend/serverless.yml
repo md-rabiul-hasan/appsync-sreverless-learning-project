@@ -1,0 +1,42 @@
+service: serverless-appsync-backend
+
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: us-east-1
+
+plugins:
+  - serverless-appsync-plugin
+
+# AppSync configuration
+custom:
+  appSync:
+    name: bookStoreAppSyncAPI
+    authenticationType: AMAZON_COGNITO_USER_POOLS
+    # if AMAZON_COGNITO_USER_POOLS
+    userPoolConfig:
+      awsRegion: us-east-1
+      defaultAction: ALLOW
+      userPoolId: !Ref cognitoUserPool
+    mappingTemplatesLocation: mapping-templates
+    mappingTemplates:
+      - type: Query
+        field: getBookById
+        dataSource: booksTable
+      - type: Mutation
+        field: createBook
+        dataSource: booksTable
+
+    dataSources:
+      - type: AMAZON_DYNAMODB
+        name: booksTable
+        config:
+          tableName: !Ref booksTable
+
+
+# you can add cloudformation resource templates here
+resources:
+  Resources:
+    ${file(resources.yml)}
